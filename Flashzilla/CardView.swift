@@ -8,6 +8,8 @@
 import SwiftUI
 // in General tab of Project we disallowed portrait mode
 struct CardView: View {
+    
+    @Environment(\.accessibilityDifferentiateWithoutColor) var accessibilityDifferentiateWithoutColor  // for red green blindness
     let card: Card
     var removal: (() -> Void)? = nil
     @State private var isShowingAnswer = false
@@ -15,11 +17,16 @@ struct CardView: View {
     var body: some View {
         ZStack{
             RoundedRectangle(cornerRadius: /*@START_MENU_TOKEN@*/25.0/*@END_MENU_TOKEN@*/)
-                .fill(.white
+                .fill(
+                    accessibilityDifferentiateWithoutColor
+                    ? .white
+                    :.white
                     .opacity(1 - Double(abs(offset.width/50.0))))
                 .background(
-                RoundedRectangle(cornerRadius: 25)
-                    .fill(offset.width>0 ? .green : .red)) // is postive when dragged to the right, negative when dragged to the left
+                    accessibilityDifferentiateWithoutColor
+                    ? nil
+                    : RoundedRectangle(cornerRadius: 25)
+                        .fill(offset.width>0 ? .green : .red)) // is postive when dragged to the right, negative when dragged to the left
                 .shadow(radius: 10)
             VStack{
                 Text(card.prompt)
