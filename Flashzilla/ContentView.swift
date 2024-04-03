@@ -53,6 +53,14 @@ struct ContentView: View {
                             .stacked(at: index, in: cards.count)
                     }
                 }
+                .allowsHitTesting(timeRemaining > 0) //only allowing interactivy when there is still time remaining
+                if cards.isEmpty {
+                    Button("Start again", action:resetCards)
+                        .padding()
+                        .background(.white)
+                        .foregroundStyle(.black)
+                        .clipShape(.capsule)
+                }
             }
             if accessibilityDifferentiateWithoutColor {
                 VStack{
@@ -83,7 +91,9 @@ struct ContentView: View {
         }
         .onChange(of: scenePhase) {
             if scenePhase == .active {
-                isActive = true
+                if cards.isEmpty == false { // make sure the timer does not restart when coming back from background when cards are empty 
+                    isActive = true
+                }
             }
             else{
                 isActive = false
@@ -92,6 +102,15 @@ struct ContentView: View {
     }
     func removeCard(at index: Int){
         cards.remove(at: index)
+        
+        if cards.isEmpty {
+            isActive = false
+        }
+    }
+    func resetCards() {
+        cards = Array<Card>(repeating: .example, count: 10)
+        timeRemaining = 100
+        isActive = true
     }
 }
 
