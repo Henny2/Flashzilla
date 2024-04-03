@@ -20,6 +20,13 @@ extension View {
 struct ContentView: View {
     @Environment(\.accessibilityDifferentiateWithoutColor) var accessibilityDifferentiateWithoutColor  // for red green blindness
     @State private var cards = Array<Card>(repeating: .example, count: 10)
+    
+    @State private var timeRemaining = 100
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect() // a timer that fires every second
+    
+    @Environment(\.scenePhase) var scenePhase
+    @State private var isActive = true // combining the scenePhase info with the info whether there are still cards to work thru
+    
     var body: some View {
         //background behind cards
         ZStack{
@@ -28,6 +35,13 @@ struct ContentView: View {
                 .ignoresSafeArea()
             // timer above cards
             VStack{
+                Text("Time is \(timeRemaining)")
+                    .font(.largeTitle)
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 5)
+                    .background(.black.opacity(0.75))
+                    .clipShape(.capsule)
                 // cards above each other
                 ZStack{
                     ForEach(0..<cards.count, id:\.self) { index in
@@ -60,6 +74,19 @@ struct ContentView: View {
                     .font(.largeTitle)
                     .padding()
                 }
+            }
+        }.onReceive(timer) { time in
+            guard isActive else {return} //making sure the timer pauses when the app goes into background
+            if timeRemaining > 0 {
+                timeRemaining -= 1
+            }
+        }
+        .onChange(of: scenePhase) {
+            if scenePhase == .active {
+                isActive = true
+            }
+            else{
+                isActive = false
             }
         }
     }
