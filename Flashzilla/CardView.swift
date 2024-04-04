@@ -10,6 +10,8 @@ import SwiftUI
 struct CardView: View {
     
     @Environment(\.accessibilityDifferentiateWithoutColor) var accessibilityDifferentiateWithoutColor  // for red green blindness
+    @Environment(\.accessibilityVoiceOverEnabled) var accessibilityVoiceOverEnabled
+    
     let card: Card
     var removal: (() -> Void)? = nil
     @State private var isShowingAnswer = false
@@ -29,13 +31,21 @@ struct CardView: View {
                         .fill(offset.width>0 ? .green : .red)) // is postive when dragged to the right, negative when dragged to the left
                 .shadow(radius: 10)
             VStack{
-                Text(card.prompt)
-                    .font(.largeTitle)
-                    .foregroundStyle(.black)
-                if isShowingAnswer {
-                    Text(card.answer)
-                        .font(.title)
-                        .foregroundStyle(.secondary)
+                // for voice over we only show either the prompt or the answer, this swap will trigger voice over to read out the answer when it appears
+                if accessibilityVoiceOverEnabled {
+                    Text(isShowingAnswer ? card.answer : card.prompt)
+                        .font(.largeTitle)
+                        .foregroundStyle(.black)
+                }
+                else {
+                    Text(card.prompt)
+                        .font(.largeTitle)
+                        .foregroundStyle(.black)
+                    if isShowingAnswer {
+                        Text(card.answer)
+                            .font(.title)
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
             .padding(20)
@@ -46,6 +56,7 @@ struct CardView: View {
         .rotationEffect(.degrees(offset.width/5.0))
         .offset(x:offset.width*5)
         .opacity(2-Double(abs(offset.width/50)))
+        .accessibilityAddTraits(.isButton) // for voiceover, making clear that the card can be tapped
         .gesture(
             DragGesture()
                 .onChanged { gesture in
@@ -62,6 +73,7 @@ struct CardView: View {
         .onTapGesture {
             isShowingAnswer.toggle()
         }
+        .animation(.default, value: offset) // animating the springing back to the middle
     }
 }
 

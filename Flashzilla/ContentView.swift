@@ -19,6 +19,7 @@ extension View {
 
 struct ContentView: View {
     @Environment(\.accessibilityDifferentiateWithoutColor) var accessibilityDifferentiateWithoutColor  // for red green blindness
+    @Environment(\.accessibilityVoiceOverEnabled) var accessibilityVoiceOverEnabled
     @State private var cards = Array<Card>(repeating: .example, count: 10)
     
     @State private var timeRemaining = 100
@@ -30,7 +31,7 @@ struct ContentView: View {
     var body: some View {
         //background behind cards
         ZStack{
-            Image("background")
+            Image(decorative: "background") // adding decorative for accessibility
                 .resizable()
                 .ignoresSafeArea()
             // timer above cards
@@ -51,6 +52,8 @@ struct ContentView: View {
                             }
                         }
                             .stacked(at: index, in: cards.count)
+                            .allowsHitTesting(index == cards.count-1) // only allow the top most card to be dragged
+                            .accessibilityHidden(index < cards.count-1) //hide card from voice over
                     }
                 }
                 .allowsHitTesting(timeRemaining > 0) //only allowing interactivy when there is still time remaining
@@ -62,21 +65,37 @@ struct ContentView: View {
                         .clipShape(.capsule)
                 }
             }
-            if accessibilityDifferentiateWithoutColor {
+            // showing buttons for voice over as well
+            if accessibilityDifferentiateWithoutColor || accessibilityVoiceOverEnabled {
                 VStack{
                     Spacer()
                     HStack{
-                        Image(systemName: "xmark.circle")
-                            .padding()
-                            .background(.black.opacity(0.7))
-                            .clipShape(.circle)
-                        
+                        Button{
+                            withAnimation {
+                                removeCard(at: cards.count-1)
+                            }
+                        } label: {
+                            Image(systemName: "xmark.circle")
+                                .padding()
+                                .background(.black.opacity(0.7))
+                                .clipShape(.circle)
+                        }
+                        .accessibilityLabel("Wrong")
+                        .accessibilityHint("Mark you answer as wrong")
                         Spacer()
                         
-                        Image(systemName: "checkmark.circle")
-                            .padding()
-                            .background(.black.opacity(0.7))
-                            .clipShape(.circle)
+                        Button{
+                            withAnimation {
+                                removeCard(at: cards.count-1)
+                            }
+                        } label: {
+                            Image(systemName: "checkmark.circle")
+                                .padding()
+                                .background(.black.opacity(0.7))
+                                .clipShape(.circle)
+                        }
+                        .accessibilityLabel("Correct")
+                        .accessibilityHint("Mark you answer as correct")
                     }
                     .foregroundStyle(.white)
                     .font(.largeTitle)
@@ -91,7 +110,7 @@ struct ContentView: View {
         }
         .onChange(of: scenePhase) {
             if scenePhase == .active {
-                if cards.isEmpty == false { // make sure the timer does not restart when coming back from background when cards are empty 
+                if cards.isEmpty == false { // make sure the timer does not restart when coming back from background when cards are empty
                     isActive = true
                 }
             }
@@ -101,6 +120,7 @@ struct ContentView: View {
         }
     }
     func removeCard(at index: Int){
+        guard index >= 0 else { return } // only run this function if there are cards to remove
         cards.remove(at: index)
         
         if cards.isEmpty {
