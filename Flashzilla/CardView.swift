@@ -12,6 +12,8 @@ struct CardView: View {
     @Environment(\.accessibilityDifferentiateWithoutColor) var accessibilityDifferentiateWithoutColor  // for red green blindness
     @Environment(\.accessibilityVoiceOverEnabled) var accessibilityVoiceOverEnabled
     
+    @State private var isDragged = false
+    
     let card: Card
     var removal: (() -> Void)? = nil
     @State private var isShowingAnswer = false
@@ -28,7 +30,7 @@ struct CardView: View {
                     accessibilityDifferentiateWithoutColor
                     ? nil
                     : RoundedRectangle(cornerRadius: 25)
-                        .fill(offset.width>0 ? .green : .red)) // is postive when dragged to the right, negative when dragged to the left
+                        .fill(isDragged ? (offset.width>0 ? .green : .red) : .white )) // is postive when dragged to the right, negative when dragged to the left
                 .shadow(radius: 10)
             VStack{
                 // for voice over we only show either the prompt or the answer, this swap will trigger voice over to read out the answer when it appears
@@ -61,8 +63,10 @@ struct CardView: View {
             DragGesture()
                 .onChanged { gesture in
                     offset = gesture.translation
+                    isDragged = true
                 }
                 .onEnded { _ in
+                    isDragged = false
                     if abs(offset.width) > 100 {
                         removal?()
                     } else {
