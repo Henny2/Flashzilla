@@ -166,3 +166,6 @@ struct ContentView: View {
 #Preview {
     ContentView()
 }
+
+
+// solution for readding cards: https://www.hackingwithswift.com/forums/100-days-of-swiftui/day-91-flashzilla-challenge-2/7938/23763
