@@ -23,7 +23,6 @@ struct ContentView: View {
     @State private var cards = Array<Card>()
     
     @State private var showingEditScreen = false
-    
     @State private var timeRemaining = 100
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect() // a timer that fires every second
     
@@ -49,9 +48,9 @@ struct ContentView: View {
                 ZStack{
 //                    ForEach(0..<cards.count, id:\.self) { index in
                     ForEach(cards) { card in
-                        CardView(card: card){
+                        CardView(card: card){ isCorrect in
                             withAnimation {
-                                removeCard(at: getIndex(of: card))
+                                removeCard(at: getIndex(of: card), isCorrect: isCorrect)
                             }
                         }
                             .stacked(at: getIndex(of: card), in: cards.count)
@@ -92,7 +91,7 @@ struct ContentView: View {
                     HStack{
                         Button{
                             withAnimation {
-                                removeCard(at: cards.count-1)
+                                removeCard(at: cards.count-1, isCorrect: false)
                             }
                         } label: {
                             Image(systemName: "xmark.circle")
@@ -106,7 +105,7 @@ struct ContentView: View {
                         
                         Button{
                             withAnimation {
-                                removeCard(at: cards.count-1)
+                                removeCard(at: cards.count-1, isCorrect: true)
                             }
                         } label: {
                             Image(systemName: "checkmark.circle")
@@ -141,18 +140,18 @@ struct ContentView: View {
         .sheet(isPresented: $showingEditScreen, onDismiss: resetCards) { EditCards()}
         .onAppear(perform: resetCards)
     }
-    func removeCard(at index: Int){
+    func removeCard(at index: Int, isCorrect: Bool){
         guard index >= 0 else { return } // only run this function if there are cards to remove
-        cards.remove(at: index)
-        
+        print(isCorrect)
+        if isCorrect{
+            cards.remove(at: index)
+        } else {
+            let newCard = Card(id: UUID(), prompt: cards[index].prompt, answer: cards[index].answer)
+            cards.remove(at: index)
+            cards.insert(newCard, at: 0)
+        }
         if cards.isEmpty {
             isActive = false
-        }
-    }
-    func removeCard(card: Card){
-        for card in cards {
-            print(cards)
-            print(card)
         }
     }
     

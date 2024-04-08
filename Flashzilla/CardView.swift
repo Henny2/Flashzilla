@@ -15,7 +15,7 @@ struct CardView: View {
     @State private var isDragged = false
     
     let card: Card
-    var removal: (() -> Void)? = nil
+    var removal: ((Bool) -> Void)? = nil
     @State private var isShowingAnswer = false
     @State private var offset = CGSize.zero // no drag by default
     var body: some View {
@@ -68,7 +68,7 @@ struct CardView: View {
                 .onEnded { _ in
                     isDragged = false
                     if abs(offset.width) > 100 {
-                        removal?()
+                        removal?(offset.width > 0)
                     } else {
                         offset = .zero
                     }
