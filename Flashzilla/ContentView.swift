@@ -47,15 +47,16 @@ struct ContentView: View {
                     .clipShape(.capsule)
                 // cards above each other
                 ZStack{
-                    ForEach(0..<cards.count, id:\.self) { index in
-                        CardView(card: cards[index]){
+//                    ForEach(0..<cards.count, id:\.self) { index in
+                    ForEach(cards) { card in
+                        CardView(card: card){
                             withAnimation {
-                                removeCard(at: index)
+                                removeCard(at: getIndex(of: card))
                             }
                         }
-                            .stacked(at: index, in: cards.count)
-                            .allowsHitTesting(index == cards.count-1) // only allow the top most card to be dragged
-                            .accessibilityHidden(index < cards.count-1) //hide card from voice over
+                            .stacked(at: getIndex(of: card), in: cards.count)
+                            .allowsHitTesting(getIndex(of: card) == cards.count-1) // only allow the top most card to be dragged
+                            .accessibilityHidden(getIndex(of: card) < cards.count-1) //hide card from voice over
                     }
                 }
                 .allowsHitTesting(timeRemaining > 0) //only allowing interactivy when there is still time remaining
@@ -148,6 +149,22 @@ struct ContentView: View {
             isActive = false
         }
     }
+    func removeCard(card: Card){
+        for card in cards {
+            print(cards)
+            print(card)
+        }
+    }
+    
+    func getIndex(of card: Card) -> Int {
+        for i in 0...cards.count {
+            if cards[i].id == card.id {
+                return i
+            }
+        }
+        return -1
+    }
+    
     func resetCards() {
         timeRemaining = 100
         isActive = true
